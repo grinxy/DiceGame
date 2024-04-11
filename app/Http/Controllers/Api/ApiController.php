@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class ApiController extends Controller
 {
@@ -56,6 +57,30 @@ class ApiController extends Controller
     //Login API (POST)
     public function login(Request $request)
     {
+         //Data validation
+       $request->validate([
+            'email' => 'required',
+            'password' => 'required',
+        ]);
+
+        if(Auth::attempt([
+            'email' => $request->email,
+            'password' => $request->password
+        ])){
+            $user = Auth::user();
+            $token = $user->createToken('userToken')->accessToken;
+            return response()->json([
+                'status' => true,
+                'message' => 'Login Successful',
+                'token' => $token
+            ]);
+
+        }else{
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid login details'
+            ]);
+        }
     }
 
     //Profile API(GET)
