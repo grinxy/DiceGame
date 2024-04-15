@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
-class ApiController extends Controller
+class UserController extends Controller
 {
+
     //Register API (POST)
     public function register(Request $request)
     {
@@ -105,3 +106,4 @@ class ApiController extends Controller
         ]);
     }
 }
+
