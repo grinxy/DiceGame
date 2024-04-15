@@ -42,13 +42,13 @@ class UserController extends Controller
         $name = $request->filled('name') ? $request->name : 'anonimo';
 
         //Create User
-         User::create([
+         $user = User::create([
             'name' => $name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
 
         ]);
-
+        $user->assignrole('player');
 
         return response()->json([
             'status' => true,
@@ -60,13 +60,14 @@ class UserController extends Controller
     {
          //Data validation
        $request->validate([
-            'email' => 'required',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
         if(Auth::attempt([
             'email' => $request->email,
-            'password' => $request->password
+            'password' => $request->password,
+
         ])){
             $user = Auth::user();
             $token = $user->createToken('userToken')->accessToken;
