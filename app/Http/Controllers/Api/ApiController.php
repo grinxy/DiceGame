@@ -97,8 +97,7 @@ class ApiController extends Controller
     //Logout API(GET)
     public function logout()
     {
-        $user = Auth::user()->token()->revoke();
-      // User::destroy($user->id);
+        Auth::user()->token()->revoke();
         return response()->json([
             'status' =>true,
             'message'=> 'User is now logged out',
