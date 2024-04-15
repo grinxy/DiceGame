@@ -26,7 +26,7 @@ Route::prefix('v1')->group(function () {
     Route::post('login', [ApiController::class, 'login']);
 
     // Protected routes (require authentication)
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware('auth:api')->group(function () {      //para estos dos metodos primero hay que pasar seguridad del middleware
         Route::get('profile', [ApiController::class, 'profile']);
         Route::get('logout', [ApiController::class, 'logout']);
     });
