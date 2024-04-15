@@ -42,7 +42,7 @@ class UserController extends Controller
         $name = $request->filled('name') ? $request->name : 'anonimo';
 
         //Create User
-         $user = User::create([
+        $user = User::create([
             'name' => $name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -58,17 +58,17 @@ class UserController extends Controller
     //Login API (POST)
     public function login(Request $request)
     {
-         //Data validation
-       $request->validate([
+        //Data validation
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if(Auth::attempt([
+        if (Auth::attempt([
             'email' => $request->email,
             'password' => $request->password,
 
-        ])){
+        ])) {
             $user = Auth::user();
             $token = $user->createToken('userToken')->accessToken;
             return response()->json([
@@ -76,8 +76,7 @@ class UserController extends Controller
                 'message' => 'Login Successful',
                 'token' => $token
             ]);
-
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid login details'
@@ -91,8 +90,8 @@ class UserController extends Controller
         $user = Auth::user();
 
         return response()->json([
-            'status' =>true,
-            'message'=> 'Profile Information',
+            'status' => true,
+            'message' => 'Profile Information',
             'data' => $user
         ]);
     }
@@ -101,10 +100,22 @@ class UserController extends Controller
     {
         Auth::user()->token()->revoke();
         return response()->json([
-            'status' =>true,
-            'message'=> 'User is now logged out',
+            'status' => true,
+            'message' => 'User is now logged out',
 
         ]);
     }
-}
+    public function listPlayers()
+    {
+        Auth::user();
+        $players = User::whereHas('roles', function ($query) {
+            $query->where('name', 'player');
+        })->get();
 
+        return response()->json([
+            'status' => true,
+            'message' => 'Players list:',
+            'data' => $players
+        ]);
+    }
+}

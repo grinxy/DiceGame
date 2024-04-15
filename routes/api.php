@@ -30,4 +30,7 @@ Route::prefix('v1')->group(function () {
         Route::get('profile', [UserController::class, 'profile']);
         Route::post('logout', [UserController::class, 'logout']);
     });
+    Route::middleware('auth:api','checkAdminRole')->group(function () {
+        Route::get('listPlayers', [UserController::class, 'listPlayers']);
+    });
 });
