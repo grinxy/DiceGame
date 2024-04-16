@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,12 +22,15 @@ use App\Http\Controllers\Api\ApiController;
 // Version 1 of the API
 Route::prefix('v1')->group(function () {
     // Open routes (no authentication required)
-    Route::post('register', [ApiController::class, 'register']);
-    Route::post('login', [ApiController::class, 'login']);
+    Route::post('register', [UserController::class, 'register']);
+    Route::post('login', [UserController::class, 'login']);
 
     // Protected routes (require authentication)
     Route::middleware('auth:api')->group(function () {      //para estos dos metodos primero hay que pasar seguridad del middleware
-        Route::get('profile', [ApiController::class, 'profile']);
-        Route::post('logout', [ApiController::class, 'logout']);
+        Route::get('profile', [UserController::class, 'profile']);
+        Route::post('logout', [UserController::class, 'logout']);
+    });
+    Route::middleware('auth:api','checkAdminRole')->group(function () {
+        Route::get('listPlayers', [UserController::class, 'listPlayers']);
     });
 });

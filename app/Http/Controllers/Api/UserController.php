@@ -10,8 +10,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
-class ApiController extends Controller
+class UserController extends Controller
 {
+
     //Register API (POST)
     public function register(Request $request)
     {
@@ -41,13 +42,13 @@ class ApiController extends Controller
         $name = $request->filled('name') ? $request->name : 'anonimo';
 
         //Create User
-         User::create([
+        $user = User::create([
             'name' => $name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
 
         ]);
-
+        $user->assignrole('player');
 
         return response()->json([
             'status' => true,
@@ -57,16 +58,17 @@ class ApiController extends Controller
     //Login API (POST)
     public function login(Request $request)
     {
-         //Data validation
-       $request->validate([
-            'email' => 'required',
+        //Data validation
+        $request->validate([
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        if(Auth::attempt([
+        if (Auth::attempt([
             'email' => $request->email,
-            'password' => $request->password
-        ])){
+            'password' => $request->password,
+
+        ])) {
             $user = Auth::user();
             $token = $user->createToken('userToken')->accessToken;
             return response()->json([
@@ -74,8 +76,7 @@ class ApiController extends Controller
                 'message' => 'Login Successful',
                 'token' => $token
             ]);
-
-        }else{
+        } else {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid login details'
@@ -89,8 +90,8 @@ class ApiController extends Controller
         $user = Auth::user();
 
         return response()->json([
-            'status' =>true,
-            'message'=> 'Profile Information',
+            'status' => true,
+            'message' => 'Profile Information',
             'data' => $user
         ]);
     }
@@ -99,9 +100,22 @@ class ApiController extends Controller
     {
         Auth::user()->token()->revoke();
         return response()->json([
-            'status' =>true,
-            'message'=> 'User is now logged out',
+            'status' => true,
+            'message' => 'User is now logged out',
 
+        ]);
+    }
+    public function listPlayers()
+    {
+        Auth::user();
+        $players = User::whereHas('roles', function ($query) {
+            $query->where('name', 'player');
+        })->get();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Players list:',
+            'data' => $players
         ]);
     }
 }
