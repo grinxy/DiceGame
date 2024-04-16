@@ -109,15 +109,16 @@ class UserController extends Controller
     public function listPlayers()
     {
         if (Auth::user()) {
+            //mostrar solo jugadores
             $players = User::whereHas('roles', function ($query) {
                 $query->where('name', 'player');
             })->get();
             foreach ($players as $player) {
-                $successRate = $this->calculateSuccessRate($player);
+                $successRate = round(($this->calculateSuccessRate($player)),2);
                 $player->success_rate = $successRate;
                 $totalSuccessRate = +$successRate;
             }
-            $averageSuccessRate = $totalSuccessRate / count($players);
+            $averageSuccessRate = round(($totalSuccessRate / count($players)),2);
 
             return response()->json([
                 'status' => true,
