@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
@@ -111,10 +109,18 @@ class UserController extends Controller
                 'message' => 'User not found',
             ], 404);
         }
-        $user->token()->revoke();
+        //si es usuaio no logeado
+        if (!Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User is not authenticated',
+            ], 401);
+        }
+        $user->tokens()->delete();
         return response()->json([
             'status' => true,
             'message' => 'User is now logged out',
 
         ]);
     }
+}

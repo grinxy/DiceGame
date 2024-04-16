@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Game;
 use App\Models\User;
 
-
 class GameController extends Controller
 {
     public function throwDices()
@@ -28,7 +27,6 @@ class GameController extends Controller
             'result' => $result
         ];
     }
-
 
     public function play($id)
     {
@@ -58,3 +56,4 @@ class GameController extends Controller
         ], 201);
     }
 
+}

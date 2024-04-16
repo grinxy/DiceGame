@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\PlayerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,18 +28,21 @@ Route::prefix('v1')->group(function () {
     Route::post('/players/login', [UserController::class, 'login']);
 
 
-    Route::middleware('auth:api')->group(function () {
+    Route::middleware('auth:api', 'authenticated')->group(function () {
         Route::put('/players/{id}', [UserController::class, 'nameChange']);
         Route::post('/players/{id}/logout', [UserController::class, 'logout']);
     });
     Route::middleware('auth:api','checkPlayerRole')->group(function () {
-        Route::post('/players/{id}/games/', [GameController::class, 'play']);
-        Route::get('/players/{id}/games', [GameController::class, 'gamesHistory']);
-        Route::delete('players/{id}/games', [GameController::class, 'deleteHistory']);
+        Route::post('/players/{id}/games', [GameController::class, 'play']);
+        Route::get('/players/{id}/games', [PlayerController::class, 'gamesHistory']);
+        Route::delete('players/{id}/games', [PlayerController::class, 'deleteHistory']);
 
 
     });
     Route::middleware('auth:api','checkAdminRole')->group(function () {
-        Route::get('/players', [UserController::class, 'listPlayers']);
+        Route::get('/players', [PlayerController::class, 'listPlayers']);
+        Route::get('/players/ranking', [PlayerController::class, 'ranking']);
+        Route::get('/players/ranking/winner', [PlayerController::class, 'rankingWinner']);
+        Route::get('/players/ranking/loser', [PlayerController::class, 'rankingLoser']);
     });
 });

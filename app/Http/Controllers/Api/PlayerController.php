@@ -9,31 +9,118 @@ use App\Models\Game;
 
 class PlayerController extends Controller
 {
-    public function listPlayers()
+    public function getPlayers()
     {
-        //mostrar solo jugadores
-        $players = User::whereHas('roles', function ($query) {
+        return User::whereHas('roles', function ($query) {
             $query->where('name', 'player');
         })->get();
+    }
+    public function listPlayers()
+    {
+        $players = $this->getPlayers();
         foreach ($players as $player) {
             $successRate = round(($this->calculateSuccessRate($player)), 2);
             $player->success_rate = $successRate;
-            $totalSuccessRate = +$successRate;
+        }
+
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Players list:',
+            'data' => $players
+        ]);
+    }
+    public function ranking()
+    {
+        $totalSuccessRate =0;
+        $players = $this->getPlayers();
+        foreach ($players as $player) {
+            $successRate = round(($this->calculateSuccessRate($player)), 2);
+            $player->success_rate = $successRate;
+            $totalSuccessRate += $successRate;
         }
         $averageSuccessRate = round(($totalSuccessRate / count($players)), 2);
 
         return response()->json([
             'status' => true,
-            'average succes rate players' => $averageSuccessRate,
-            'message' => 'Players list:',
-            'data' => $players
+            'message' => 'Average success rate of all players: ' . $averageSuccessRate . '%',
+        ]);
+    }
+    public function rankingWinner()
+    {
+
+        $players = $players = $this->getPlayers();
+        $winner = collect();
+        $highestSuccessRate = 0;
+
+        foreach ($players as $player) {
+            $successRate = round(($this->calculateSuccessRate($player)), 2);
+            $player->success_rate = $successRate;
+
+            if ($highestSuccessRate == null || $successRate > $highestSuccessRate) {
+                $highestSuccessRate = $successRate;
+                $winner = collect([$player]); // Inicializa la colección con el jugador actual
+            } elseif ($successRate == $highestSuccessRate) {
+                $winner->push($player); // Agrega el jugador a la colección de perdedores
+            }
+        }
+
+        // Mapea los datos de los perdedores para su salida
+        $winnersData = $winner->map(function ($winner) {
+            return [
+                'name' => $winner->name,
+                'success_rate' => $winner->success_rate
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Player with highest success score is:',
+            'Winner(s)' => $winnersData->toArray()
+
+        ]);
+
+    }
+    public function rankingLoser()
+    {
+
+        $players = $this->getPlayers();
+        $losers = collect();
+        $lowestSuccessRate = null;
+
+        foreach ($players as $player) {
+            $successRate = round($this->calculateSuccessRate($player), 2);
+            $player->success_rate = $successRate;
+
+            // Si es el primer jugador o tiene una tasa de éxito más baja que la actual más baja, actualiza los perdedores
+            if ($lowestSuccessRate == null || $successRate < $lowestSuccessRate) {
+                $lowestSuccessRate = $successRate;
+                $losers = collect([$player]); // Inicializa la colección con el jugador actual
+            } elseif ($successRate == $lowestSuccessRate) {
+                $losers->push($player); // Agrega el jugador a la colección de perdedores
+            }
+        }
+
+        // Mapea los datos de los perdedores para su salida
+        $losersData = $losers->map(function ($loser) {
+            return [
+                'name' => $loser->name,
+                'success_rate' => $loser->success_rate
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Player with lowest success score is:',
+            'Loser(s)' => $losersData->toArray()
+
         ]);
     }
     public function gamesHistory($id)
     {
         $user = User::findOrFail($id);
         $games = Game::where('user_id', $id)->get();
-        $successRate = $this->calculateSuccessRate($user);
+        $successRate = round($this->calculateSuccessRate($user), 2);
 
         return response()->json([
             'status' => true,
