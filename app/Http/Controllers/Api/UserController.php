@@ -107,15 +107,21 @@ class UserController extends Controller
     }
     public function listPlayers()
     {
-        Auth::user();
-        $players = User::whereHas('roles', function ($query) {
-            $query->where('name', 'player');
-        })->get();
+        if (Auth::user()) {
+            $players = User::whereHas('roles', function ($query) {
+                $query->where('name', 'player');
+            })->get();
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Players list:',
-            'data' => $players
-        ]);
+            return response()->json([
+                'status' => true,
+                'message' => 'Players list:',
+                'data' => $players
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unauthorized',
+            ]);
+        }
     }
 }
