@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\GameController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -29,8 +30,13 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:api')->group(function () {      //para estos dos metodos primero hay que pasar seguridad del middleware
         Route::get('profile', [UserController::class, 'profile']);
         Route::post('logout', [UserController::class, 'logout']);
+    Route::middleware('auth:api','player')->group(function () {
+        Route::post('play', [GameController::class, 'play']);
+        Route::get('gamesHistory', [UserController::class, 'gamesHistory']);
+        Route::get('deleteHistory', [UserController::class, 'deleteHistory']);
     });
-    Route::middleware('auth:api','checkAdminRole')->group(function () {
+    Route::middleware('auth:api','admin')->group(function () {
         Route::get('listPlayers', [UserController::class, 'listPlayers']);
     });
+});
 });

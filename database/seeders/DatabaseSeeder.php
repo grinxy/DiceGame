@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             $user->assignRole('player');
         });
 
+        $this->call(GameSeeder::class);
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
