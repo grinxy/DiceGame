@@ -17,19 +17,12 @@ class UserController extends Controller
     public function register(Request $request)
     {
         //Data validation
-        $validator =  Validator::make($request->all(), [
-            'name' => [
-                'nullable',
-                // valor único excepto en caso null que se repite anonimo
-                Rule::unique('users')->where(function ($query) {
-                    return $query->whereNotNull('name')
-                        ->where('name', '!=', 'anonimo')
-                        ->orWhereNull('name');
-                }),
-            ],
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255', // Permitir nombre nulo ya que puede ser 'anonimo' por default
             'email' => 'required|email|unique:users',
             'password' => 'required',
         ]);
+
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
@@ -84,44 +77,44 @@ class UserController extends Controller
         }
     }
 
-    //Profile API(GET)
-    public function profile()
+    //Profile update API(PUT)
+    public function nameChange($id, Request $request)
     {
-        $user = Auth::user();
+        $request->validate([
+            'name' => 'nullable|string|max:255', // Permitir nombre nulo o cadena de hasta 255 caracteres
+        ]);
 
-        return response()->json([
+        $user = User::findOrFail($id);
+
+
+        $newName = $request->input('name');
+        if (empty($newName)) {
+            $newName = 'anonimo';
+        }
+        $user->update(['name' => $newName]);
+
+
+         return response()->json([
             'status' => true,
-            'message' => 'Profile Information',
+            'message' => 'Profile successfully updated',
             'data' => $user
         ]);
     }
-    //Logout API(GET)
-    public function logout()
+    //Logout API(POST)
+    public function logout($id)
     {
-        Auth::user()->token()->revoke();
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+        $user->token()->revoke();
         return response()->json([
             'status' => true,
             'message' => 'User is now logged out',
 
         ]);
     }
-    public function listPlayers()
-    {
-        if (Auth::user()) {
-            $players = User::whereHas('roles', function ($query) {
-                $query->where('name', 'player');
-            })->get();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Players list:',
-                'data' => $players
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized',
-            ]);
-        }
-    }
-}
+   
