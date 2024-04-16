@@ -31,6 +31,8 @@ Route::prefix('v1')->group(function () {
         Route::get('profile', [UserController::class, 'profile']);
         Route::post('logout', [UserController::class, 'logout']);
         Route::post('play', [GameController::class, 'play']);
+        Route::get('gamesHistory', [UserController::class, 'gamesHistory']);
+        Route::get('deleteHistory', [UserController::class, 'deleteHistory']);
     });
     Route::middleware('auth:api','checkAdminRole')->group(function () {
         Route::get('listPlayers', [UserController::class, 'listPlayers']);

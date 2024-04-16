@@ -48,4 +48,24 @@ class GameController extends Controller
             'game' => $game
         ], 201);
     }
+
+    public function gamesList()
+    {
+        $user = Auth::user();
+        $games = Game::where('user_id', $user->id)->get();
+        $won = 0;
+
+        foreach($games as $game => $result){
+            if ($result == 'won'){
+                $won++;
+            }
+        }
+        $successRate = count($games) > 0 ? ($won / count($games)) * 100 : 0;
+        return response()->json([
+            'status' => true,
+            'message' => 'Palyer games history:',
+            'success rate' => $successRate . ' %',
+            'data' => $games
+        ]);
+    }
 }
