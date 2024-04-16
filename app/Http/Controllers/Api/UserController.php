@@ -141,7 +141,7 @@ class UserController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Player games history:',
+            'message' => 'Player ' . $user->name . ' games history:',
             'games_played' => count($games),
             'success_rate' => $successRate . ' %',
             'data' => $games
