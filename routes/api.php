@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\GameController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,6 +27,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/players/login', [UserController::class, 'login']);
 
     // Protected routes (require authentication)
+
     Route::middleware('auth:api')->group(function () {
         Route::put('/players/{id}', [UserController::class, 'nameChange']);
         Route::post('/players/{id}/logout', [UserController::class, 'logout']);
@@ -34,6 +36,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/players/{id}/games/', [GameController::class, 'play']);
         Route::get('/players/{id}/games', [GameController::class, 'gamesHistory']);
         Route::delete('players/{id}/games', [GameController::class, 'deleteHistory']);
+
 
     });
     Route::middleware('auth:api','checkAdminRole')->group(function () {

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Game;
 use App\Models\User;
 
+
 class GameController extends Controller
 {
     public function throwDices()
@@ -27,6 +28,7 @@ class GameController extends Controller
             'result' => $result
         ];
     }
+
 
     public function play($id)
     {
@@ -56,23 +58,4 @@ class GameController extends Controller
         ], 201);
     }
 
-    public function gamesList()
-    {
-        $user = Auth::user();
-        $games = Game::where('user_id', $user->id)->get();
-        $won = 0;
-
-        foreach ($games as $game => $result) {
-            if ($result == 'won') {
-                $won++;
-            }
-        }
-        $successRate = count($games) > 0 ? ($won / count($games)) * 100 : 0;
-        return response()->json([
-            'status' => true,
-            'message' => 'Palyer games history:',
-            'success rate' => $successRate . ' %',
-            'data' => $games
-        ]);
-    }
-}
+  
