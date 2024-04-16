@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Game;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
@@ -18,19 +16,12 @@ class UserController extends Controller
     public function register(Request $request)
     {
         //Data validation
-        $validator =  Validator::make($request->all(), [
-            'name' => [
-                'nullable',
-                // valor único excepto en caso null que se repite anonimo
-                Rule::unique('users')->where(function ($query) {
-                    return $query->whereNotNull('name')
-                        ->where('name', '!=', 'anonimo')
-                        ->orWhereNull('name');
-                }),
-            ],
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string|max:255', // Permitir nombre nulo ya que puede ser 'anonimo' por default
             'email' => 'required|email|unique:users',
             'password' => 'required',
         ]);
+
         // Check if validation fails
         if ($validator->fails()) {
             return response()->json([
@@ -85,86 +76,51 @@ class UserController extends Controller
         }
     }
 
-    //Profile API(GET)
-    public function profile()
+    //Profile update API(PUT)
+    public function nameChange($id, Request $request)
     {
-        $user = Auth::user();
+        $request->validate([
+            'name' => 'nullable|string|max:255', // Permitir nombre nulo o cadena de hasta 255 caracteres
+        ]);
 
-        return response()->json([
+        $user = User::findOrFail($id);
+
+
+        $newName = $request->input('name');
+        if (empty($newName)) {
+            $newName = 'anonimo';
+        }
+        $user->update(['name' => $newName]);
+
+
+         return response()->json([
             'status' => true,
-            'message' => 'Profile Information',
+            'message' => 'Profile successfully updated',
             'data' => $user
         ]);
     }
-    //Logout API(GET)
-    public function logout()
+    //Logout API(POST)
+    public function logout($id)
     {
-        Auth::user()->token()->revoke();
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);
+        }
+        //si es usuaio no logeado
+        if (!Auth::check()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User is not authenticated',
+            ], 401);
+        }
+        $user->tokens()->delete();
         return response()->json([
             'status' => true,
             'message' => 'User is now logged out',
 
-        ]);
-    }
-    public function listPlayers()
-    {
-        if (Auth::user()) {
-            //mostrar solo jugadores
-            $players = User::whereHas('roles', function ($query) {
-                $query->where('name', 'player');
-            })->get();
-            foreach ($players as $player) {
-                $successRate = round(($this->calculateSuccessRate($player)),2);
-                $player->success_rate = $successRate;
-                $totalSuccessRate = +$successRate;
-            }
-            $averageSuccessRate = round(($totalSuccessRate / count($players)),2);
-
-            return response()->json([
-                'status' => true,
-                'average succes rate players' => $averageSuccessRate,
-                'message' => 'Players list:',
-                'data' => $players
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Unauthorized',
-            ]);
-        }
-    }
-    public function gamesHistory()
-    {
-        $user = Auth::user();
-        $games = Game::where('user_id', $user->id)->get();
-        $successRate = $this->calculateSuccessRate($user);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Player ' . $user->name . ' games history:',
-            'games_played' => count($games),
-            'success_rate' => $successRate . ' %',
-            'data' => $games
-        ]);
-    }
-
-    private function calculateSuccessRate($user)
-    {
-        $games = Game::where('user_id', $user->id)->get();
-        $won = $games->filter(function ($game) {
-            return $game->result == 'won';
-        })->count();
-
-        $totalGames = $games->count();
-        return $totalGames > 0 ? ($won / $totalGames) * 100 : 0;
-    }
-    public function deleteHistory()
-    {
-        $user = Auth::user();
-        Game::where('user_id', $user->id)->delete();
-        return response()->json([
-            'status' => true,
-            'message' => 'Game history deleted for user: ' . $user->name
         ]);
     }
 }
