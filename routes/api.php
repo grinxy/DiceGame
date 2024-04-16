@@ -26,7 +26,6 @@ Route::prefix('v1')->group(function () {
     Route::post('/players', [UserController::class, 'register']);
     Route::post('/players/login', [UserController::class, 'login']);
 
-    // Protected routes (require authentication)
 
     Route::middleware('auth:api')->group(function () {
         Route::put('/players/{id}', [UserController::class, 'nameChange']);
@@ -43,9 +42,3 @@ Route::prefix('v1')->group(function () {
         Route::get('/players', [UserController::class, 'listPlayers']);
     });
 });
-
-/*
-GET /players/ranking: retorna el rànquing mitjà de tots els jugadors/es del sistema. És a dir, el percentatge mitjà d’èxits.
-GET /players/ranking/loser: retorna el jugador/a amb pitjor percentatge d’èxit.
-GET /players/ranking/winner: retorna el jugador/a amb millor percentatge d’èxit.
-*/
