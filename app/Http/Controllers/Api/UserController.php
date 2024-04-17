@@ -47,6 +47,7 @@ class UserController extends Controller
             'status' => true,
             'message' => 'User created successfully'
         ]);
+
     }
     //Login API (POST)
     public function login(Request $request) : JsonResponse
