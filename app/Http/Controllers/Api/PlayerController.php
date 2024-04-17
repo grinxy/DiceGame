@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Game;
+use Illuminate\Http\JsonResponse;
+
 
 class PlayerController extends Controller
 {
@@ -81,7 +83,7 @@ class PlayerController extends Controller
         ]);
 
     }
-    public function rankingLoser()
+    public function rankingLoser() : JsonResponse
     {
 
         $players = $this->getPlayers();
@@ -116,9 +118,13 @@ class PlayerController extends Controller
 
         ]);
     }
-    public function gamesHistory($id)
+    public function gamesHistory(int $id, Request $request) : JsonResponse
     {
         $user = User::findOrFail($id);
+        //validacion usuario logeado y solicitud
+        if ($request->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $games = Game::where('user_id', $id)->get();
         $successRate = round($this->calculateSuccessRate($user), 2);
 
@@ -131,7 +137,7 @@ class PlayerController extends Controller
         ]);
     }
 
-    private function calculateSuccessRate($user)
+    private function calculateSuccessRate(User $user) : float
     {
         $games = Game::where('user_id', $user->id)->get();
         $won = $games->filter(function ($game) {
@@ -141,9 +147,13 @@ class PlayerController extends Controller
         $totalGames = $games->count();
         return $totalGames > 0 ? ($won / $totalGames) * 100 : 0;
     }
-    public function deleteHistory($id)
+    public function deleteHistory(int $id, Request $request) : JsonResponse
     {
         $user = User::findOrFail($id);
+        //validacion usuario logeado y solicitud
+        if ($request->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         Game::where('user_id', $user->id)->delete();
         return response()->json([
             'status' => true,

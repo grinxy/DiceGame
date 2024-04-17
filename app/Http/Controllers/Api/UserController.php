@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -13,7 +14,7 @@ class UserController extends Controller
 {
 
     //Register API (POST)
-    public function register(Request $request)
+    public function register(Request $request) : JsonResponse
     {
         //Data validation
         $validator = Validator::make($request->all(), [
@@ -48,7 +49,7 @@ class UserController extends Controller
         ]);
     }
     //Login API (POST)
-    public function login(Request $request)
+    public function login(Request $request) : JsonResponse
     {
         //Data validation
         $request->validate([
@@ -77,14 +78,17 @@ class UserController extends Controller
     }
 
     //Profile update API(PUT)
-    public function nameChange($id, Request $request)
+    public function nameChange(int $id, Request $request) : JsonResponse
     {
         $request->validate([
             'name' => 'nullable|string|max:255', // Permitir nombre nulo o cadena de hasta 255 caracteres
         ]);
 
         $user = User::findOrFail($id);
-
+        // coincidencia usuario logeado y usuario a modificar
+        if ($request->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
 
         $newName = $request->input('name');
         if (empty($newName)) {
@@ -93,14 +97,14 @@ class UserController extends Controller
         $user->update(['name' => $newName]);
 
 
-         return response()->json([
+        return response()->json([
             'status' => true,
             'message' => 'Profile successfully updated',
             'data' => $user
         ]);
     }
     //Logout API(POST)
-    public function logout($id)
+    public function logout(int $id, Request $request) : JsonResponse
     {
         $user = User::find($id);
         if (!$user) {
@@ -109,7 +113,10 @@ class UserController extends Controller
                 'message' => 'User not found',
             ], 404);
         }
-
+        //validacion usuario logeado y solicitud
+        if ($request->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
         $user->tokens()->delete();
         return response()->json([
             'status' => true,
