@@ -21,7 +21,7 @@ class RegisterTest extends TestCase
             'email' => 'example@example.com',
             'password' => '1234'
         ];
-        $response = $this->postJson('api/v1/players', $data);
+        $response = $this->postJson('/api/v1/players', $data);
 
         $response->assertStatus(201); //201 es 'created'
 
@@ -46,7 +46,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('api/v1/players', $data);
+        $response = $this->postJson('/api/v1/players', $data);
 
         $response->assertStatus(422);
 
@@ -72,7 +72,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('api/v1/players', $data);
+        $response = $this->postJson('/api/v1/players', $data);
 
         $response->assertStatus(422);
 
@@ -114,7 +114,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('api/v1/players', $data);
+        $response = $this->postJson('/api/v1/players', $data);
 
         $response->assertStatus(201);
 

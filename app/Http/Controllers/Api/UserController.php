@@ -18,7 +18,8 @@ class UserController extends Controller
     {
         //Data validation
         $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255', // Permitir nombre nulo ya que puede ser 'anonimo' por default
+            'name' => 'nullable|string|max:255|unique:users,name,' . ($request->filled('name') ? null : 'anonimo'),
+            // Permitir nombre nulo ya que puede ser 'anonimo' por default, en ese caso, no será unique
             'email' => 'required|email|unique:users',
             'password' => 'required',
         ]);
@@ -32,7 +33,7 @@ class UserController extends Controller
         }
 
         //User anonimo en caso de estar vacio o no estar
-        $name = $request->filled('name') ? $request->name : 'anonimo';
+        //$name = $request->filled('name') ? $request->name : 'anonimo';
 
         //Create User
         $user = User::create([
