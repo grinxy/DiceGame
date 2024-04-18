@@ -25,7 +25,8 @@ class LoginTest extends TestCase
         ]);
 
         // Realizar solicitud de inicio de sesión con las credenciales del usuario de prueba
-        $response = $this->postJson('/api/v1/players/login', [
+
+        $response = $this->postJson("/api/v1/players/{$user->id}/login", [
             'email' => 'test@example.com',
             'password' => '1234',
         ]);
