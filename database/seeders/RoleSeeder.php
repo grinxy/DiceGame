@@ -13,15 +13,21 @@ class RoleSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        //Rol Admin + player
-        $admin =  Role::create(['name' => 'admin']);
-        $player = Role::create(['name' => 'player']);
+    { {
+            // Verifica si los roles ya existen en la base de datos
+            if (Role::where('name', 'admin')->exists() || Role::where('name', 'player')->exists()) {
+                // Roles ya existen, no es necesario crearlos nuevamente
+                return;
+            }
 
-        Permission::create(['name' => 'login']) -> syncRoles([$admin, $player]);
-        Permission::create(['name' => 'register'])-> syncRoles([$admin, $player]);;
-        Permission::create(['name' => 'profile'])-> syncRoles([$admin, $player]);;
-        Permission::create(['name' => 'logout'])-> syncRoles([$admin, $player]);;
+            //Rol Admin + player
+            $admin =  Role::create(['name' => 'admin']);
+            $player = Role::create(['name' => 'player']);
+
+            Permission::create(['name' => 'login'])->syncRoles([$admin, $player]);
+            Permission::create(['name' => 'register'])->syncRoles([$admin, $player]);;
+            Permission::create(['name' => 'profile'])->syncRoles([$admin, $player]);;
+            Permission::create(['name' => 'logout'])->syncRoles([$admin, $player]);;
+        }
     }
-
 }

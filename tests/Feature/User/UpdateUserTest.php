@@ -8,6 +8,7 @@ use Tests\TestCase;
 
 class UpdateUserTest extends TestCase
 {
+
     /**
      * A basic feature test example.
      */
