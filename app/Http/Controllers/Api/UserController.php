@@ -14,12 +14,14 @@ class UserController extends Controller
 {
 
     //Register API (POST)
-    public function register(Request $request) : JsonResponse
+    public function register(Request $request): JsonResponse
     {
+        // Definir el valor predeterminado del nombre
+        $name = $request->filled('name') ? $request->name : 'anonimo';
         //Data validation
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255|unique:users,name,' . ($request->filled('name') ? null : 'anonimo'),
-                    // Permitir nombre nulo ya que puede ser 'anonimo' por default, en ese caso, no será unique --> concatenacion aplica excepciona  la regla unique
+            // Permitir nombre nulo ya que puede ser 'anonimo' por default, en ese caso, no será unique --> concatenacion aplica excepciona  la regla unique
             'email' => 'required|email|unique:users',
             'password' => 'required',
         ]);
@@ -37,7 +39,7 @@ class UserController extends Controller
 
         //Create User
         $user = User::create([
-            'name' => $request ->name,
+            'name' => $name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
 
@@ -49,10 +51,9 @@ class UserController extends Controller
             'message' => 'User created successfully'
 
         ], 201);
-
     }
     //Login API (POST)
-    public function login(Request $request) : JsonResponse
+    public function login(Request $request): JsonResponse
     {
         //Data validation
         $request->validate([
@@ -81,13 +82,14 @@ class UserController extends Controller
     }
 
     //Profile update API(PUT)
-    public function nameChange(int $id, Request $request) : JsonResponse
+    public function nameChange(int $id, Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'nullable|string|max:255', // Permitir nombre nulo o cadena de hasta 255 caracteres
         ]);
 
         $user = User::findOrFail($id);
+
         // coincidencia usuario logeado y usuario a modificar
         if ($request->user()->id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -107,7 +109,7 @@ class UserController extends Controller
         ]);
     }
     //Logout API(POST)
-    public function logout(int $id, Request $request) : JsonResponse
+    public function logout(int $id, Request $request): JsonResponse
     {
         $user = User::find($id);
         if (!$user) {
