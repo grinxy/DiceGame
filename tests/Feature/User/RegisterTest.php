@@ -18,8 +18,6 @@ class RegisterTest extends TestCase
     //Test registro correcto en DB
     public function test_register_user(): void
     {
-     //   Artisan::call('migrate', ['--seed' => true]);
-
 
         $data = [
             'name' => 'example2',

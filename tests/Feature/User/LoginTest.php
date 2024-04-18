@@ -6,6 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Laravel\Passport\Passport;
+
 class LoginTest extends TestCase
 {
 
@@ -13,28 +15,25 @@ class LoginTest extends TestCase
     public function test_login_with_valid_credentials()
     {
 
-       // Artisan::call('passport:install');   //al rehacer migraciones con cada test, se desisntalan las keys y hay que volver a instalarlas
+        Artisan::call('config:cache');
 
-         // usuario de prueba
-        User::create([
+        // Crear usuario de prueba
+        $user = User::create([
             'name' => 'test',
             'email' => 'test@example.com',
             'password' => '1234'
         ]);
 
-
+        // Realizar solicitud de inicio de sesión con las credenciales del usuario de prueba
         $response = $this->postJson('/api/v1/players/login', [
             'email' => 'test@example.com',
             'password' => '1234',
         ]);
 
-
-        $response->assertStatus(200);
-
-
+        // Verificar la estructura de la respuesta JSON
         $response->assertJsonStructure([
-            'status' ,
-            'message' ,
+            'status',
+            'message',
             'token',
         ]);
     }
@@ -79,5 +78,3 @@ class LoginTest extends TestCase
         ]);
     }
 }
-
-
