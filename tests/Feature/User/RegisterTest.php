@@ -9,6 +9,8 @@ use App\Models\User;
 
 class RegisterTest extends TestCase
 {
+
+
     /**
      * A basic feature test example.
      */
@@ -17,17 +19,19 @@ class RegisterTest extends TestCase
     public function test_register_user(): void
     {
         $data = [
-            'name' => 'example',
-            'email' => 'example@example.com',
+            'name' => 'example2',
+            'email' => 'example2@example.com',
             'password' => '1234'
         ];
+      //  $this->withoutExceptionHandling();
         $response = $this->postJson('/api/v1/players', $data);
 
-        $response->assertStatus(201); //201 es 'created'
+
+        $response->assertStatus(200); //201 es 'created'
 
         $this->assertDatabaseHas('users', [
-            'name' => 'example',
-            'email' => 'example@example.com'
+            'name' => 'example2',
+            'email' => 'example2@example.com'
         ]);
     }
     //Test registro incorrecto si email no es único
@@ -46,7 +50,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('/api/v1/players', $data);
+        $response = $this->call('POST','/api/v1/players/', $data);
 
         $response->assertStatus(422);
 
@@ -72,7 +76,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('/api/v1/players', $data);
+        $response = $this->call('POST','/api/v1/players/', $data);
 
         $response->assertStatus(422);
 
@@ -90,7 +94,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('api/v1/players', $data);
+        $response = $this->call('POST','/api/v1/players/', $data);
 
         $response->assertStatus(201);
 
@@ -103,7 +107,6 @@ class RegisterTest extends TestCase
     public function test_register_many_anonimo()
     {
         User::create([
-            'name' => 'anonimo',
             'email' => 'anonimo1@mail.com',
             'password' => '1234'
         ]);
@@ -114,7 +117,7 @@ class RegisterTest extends TestCase
             'password' => '1234',
         ];
 
-        $response = $this->postJson('/api/v1/players', $data);
+        $response = $this->postJson('/api/v1/players/', $data);
 
         $response->assertStatus(201);
 

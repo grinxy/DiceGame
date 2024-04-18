@@ -19,7 +19,7 @@ class UserController extends Controller
         //Data validation
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255|unique:users,name,' . ($request->filled('name') ? null : 'anonimo'),
-            // Permitir nombre nulo ya que puede ser 'anonimo' por default, en ese caso, no será unique
+                    // Permitir nombre nulo ya que puede ser 'anonimo' por default, en ese caso, no será unique --> concatenacion aplica excepciona  la regla unique
             'email' => 'required|email|unique:users',
             'password' => 'required',
         ]);
@@ -37,7 +37,7 @@ class UserController extends Controller
 
         //Create User
         $user = User::create([
-            'name' => $name,
+            'name' => $request ->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
 
@@ -47,7 +47,8 @@ class UserController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'User created successfully'
-        ]);
+
+        ], 201);
 
     }
     //Login API (POST)
