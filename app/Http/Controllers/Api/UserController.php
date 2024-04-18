@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -13,11 +14,14 @@ class UserController extends Controller
 {
 
     //Register API (POST)
-    public function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
+        // Definir el valor predeterminado del nombre
+        $name = $request->filled('name') ? $request->name : 'anonimo';
         //Data validation
         $validator = Validator::make($request->all(), [
-            'name' => 'nullable|string|max:255', // Permitir nombre nulo ya que puede ser 'anonimo' por default
+            'name' => 'nullable|string|max:255|unique:users,name,' . ($request->filled('name') ? null : 'anonimo'),
+            // Permitir nombre nulo ya que puede ser 'anonimo' por default, en ese caso, no será unique --> concatenacion aplica excepciona  la regla unique
             'email' => 'required|email|unique:users',
             'password' => 'required',
         ]);
@@ -31,7 +35,7 @@ class UserController extends Controller
         }
 
         //User anonimo en caso de estar vacio o no estar
-        $name = $request->filled('name') ? $request->name : 'anonimo';
+        //$name = $request->filled('name') ? $request->name : 'anonimo';
 
         //Create User
         $user = User::create([
@@ -45,10 +49,11 @@ class UserController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'User created successfully'
-        ]);
+
+        ], 201);
     }
     //Login API (POST)
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         //Data validation
         $request->validate([
@@ -77,7 +82,7 @@ class UserController extends Controller
     }
 
     //Profile update API(PUT)
-    public function nameChange($id, Request $request)
+    public function nameChange(int $id, Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'nullable|string|max:255', // Permitir nombre nulo o cadena de hasta 255 caracteres
@@ -85,6 +90,10 @@ class UserController extends Controller
 
         $user = User::findOrFail($id);
 
+        // coincidencia usuario logeado y usuario a modificar
+        if ($request->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
 
         $newName = $request->input('name');
         if (empty($newName)) {
@@ -93,14 +102,14 @@ class UserController extends Controller
         $user->update(['name' => $newName]);
 
 
-         return response()->json([
+        return response()->json([
             'status' => true,
             'message' => 'Profile successfully updated',
             'data' => $user
         ]);
     }
     //Logout API(POST)
-    public function logout($id)
+    public function logout(int $id, Request $request): JsonResponse
     {
         $user = User::find($id);
         if (!$user) {
@@ -109,12 +118,9 @@ class UserController extends Controller
                 'message' => 'User not found',
             ], 404);
         }
-        //si es usuaio no logeado
-        if (!Auth::check()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User is not authenticated',
-            ], 401);
+        //validacion usuario logeado y solicitud
+        if ($request->user()->id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
         $user->tokens()->delete();
         return response()->json([
