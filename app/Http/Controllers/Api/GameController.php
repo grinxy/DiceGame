@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    public function throwDices() : array
+    public function throwDices(): array
     {
 
         $dice1_value = rand(1, 6);
@@ -29,7 +29,55 @@ class GameController extends Controller
         ];
     }
 
-    public function play(int $id, Request $request) : JsonResponse
+    /**
+     * Play method
+     * @OA\Schema(
+     *     schema="PlayGame",
+     *     required={"user_id", "dice1_value", "dice2_value", "sum", "result"},
+     *     @OA\Property(property="user_id", type="integer"),
+     *     @OA\Property(property="dice1_value", type="integer"),
+     *     @OA\Property(property="dice2_value", type="integer"),
+     *     @OA\Property(property="sum", type="integer"),
+     *     @OA\Property(property="result", type="string", enum={"won", "lost"})
+     * )
+     * @OA\Post(
+     *     path="/api/v1/players/{id}/play",
+     *     tags={"Player"},
+     *     summary="Play a game",
+     *     operationId="play",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the player",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Game stored successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Game stored successfully"),
+     *             @OA\Property(property="game", ref="#/components/schemas/PlayGame")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Unauthorized")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example="false"),
+     *             @OA\Property(property="message", type="string", example="User not found")
+     *         )
+     *     )
+     * )
+     */
+    public function play(int $id, Request $request): JsonResponse
     {
         // Obtener el ID del usuario autenticado
         $user = User::find($id);
@@ -59,5 +107,4 @@ class GameController extends Controller
             'game' => $game
         ], 201);
     }
-
 }

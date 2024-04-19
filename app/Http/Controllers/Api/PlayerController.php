@@ -11,12 +11,38 @@ use Illuminate\Http\JsonResponse;
 
 class PlayerController extends Controller
 {
+
     public function getPlayers()
     {
         return User::whereHas('roles', function ($query) {
             $query->where('name', 'player');
         })->get();
     }
+    //GET players list
+    /**
+     * List all players with their success rates.
+     *
+
+     * @OA\Schema(
+     *     schema="PlayerListResponse",
+     *     required={"status", "message", "data"},
+     *     @OA\Property(property="status", type="boolean"),
+     *     @OA\Property(property="message", type="string"),
+     *     @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/User"))
+     * )
+
+     * @OA\Get(
+     *     path="/api/v1/players/list",
+     *     tags={"Admin"},
+     *     summary="List all players with success rates",
+     *     operationId="listPlayers",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Players list with success rates",
+     *         @OA\JsonContent(ref="#/components/schemas/PlayerListResponse")
+     *     )
+     * )
+     */
     public function listPlayers()
     {
         $players = $this->getPlayers();
@@ -32,9 +58,28 @@ class PlayerController extends Controller
             'data' => $players
         ]);
     }
+    //GET AVG success rate
+    /**
+     * @OA\Get(
+     *     path="/api/v1/players/ranking",
+     *     tags={"Admin"},
+     *     summary="Get ranking of players by success rate",
+     *     operationId="ranking",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="boolean", example="true"),
+     *             @OA\Property(property="message", type="string", example="Average success rate of all players: 70%"),
+     *         )
+     *     )
+     * )
+     */
+
     public function ranking()
     {
-        $totalSuccessRate =0;
+        $totalSuccessRate = 0;
         $players = $this->getPlayers();
         foreach ($players as $player) {
             $successRate = round(($this->calculateSuccessRate($player)), 2);
@@ -48,6 +93,30 @@ class PlayerController extends Controller
             'message' => 'Average success rate of all players: ' . $averageSuccessRate . '%',
         ]);
     }
+    /**
+     * @OA\Schema(
+     *     schema="User",
+     *     required={"name", "email"},
+     *     @OA\Property(property="name", type="string"),
+     *     @OA\Property(property="email", type="string", format="email")
+     * )
+     * @OA\Get(
+     *     path="/api/v1/players/ranking/winner",
+     *     tags={"Admin"},
+     *     summary="Get winner(s) with highest success rate",
+     *     operationId="rankingWinner",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="boolean", example="true"),
+     *             @OA\Property(property="message", type="string", example="Player with highest success score is:"),
+     *             @OA\Property(property="Winner(s)", type="array", @OA\Items(ref="#/components/schemas/User")),
+     *         )
+     *     )
+     * )
+     */
     public function rankingWinner()
     {
 
@@ -81,9 +150,26 @@ class PlayerController extends Controller
             'Winner(s)' => $winnersData->toArray()
 
         ]);
-
     }
-    public function rankingLoser() : JsonResponse
+    /**
+     * @OA\Get(
+     *     path="/api/v1/players/ranking/loser",
+     *     tags={"Admin"},
+     *     summary="Get loser(s) with lowest success rate",
+     *     operationId="rankingLoser",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="boolean", example="true"),
+     *             @OA\Property(property="message", type="string", example="Player with lowest success score is:"),
+     *             @OA\Property(property="Loser(s)", type="array", @OA\Items(ref="#/components/schemas/User")),
+     *         )
+     *     )
+     * )
+     */
+    public function rankingLoser(): JsonResponse
     {
 
         $players = $this->getPlayers();
@@ -118,7 +204,62 @@ class PlayerController extends Controller
 
         ]);
     }
-    public function gamesHistory(int $id, Request $request) : JsonResponse
+
+    /**
+     * @OA\Schema(
+     *     schema="Game",
+     *     required={"user_id", "dice1_value", "dice2_value", "sum", "result"},
+     *     title="Game",
+     *     description="Game schema",
+     *     @OA\Property(property="user_id", type="integer", description="ID of the user associated with the game"),
+     *     @OA\Property(property="dice1_value", type="integer", description="Value of the first dice rolled in the game"),
+     *     @OA\Property(property="dice2_value", type="integer", description="Value of the second dice rolled in the game"),
+     *     @OA\Property(property="sum", type="integer", description="Sum of the values of the two dice"),
+     *     @OA\Property(property="result", type="string", description="Result of the game"),
+     * )
+     * @OA\Get(
+     *     path="/api/v1/players/{id}/games",
+     *     tags={"Player"},
+     *     summary="Get games history of a player",
+     *     operationId="gamesHistory",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the player",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="boolean", example="true"),
+     *             @OA\Property(property="message", type="string", example="Player John Doe games history:"),
+     *             @OA\Property(property="games_played", type="integer", example="5"),
+     *             @OA\Property(property="success_rate", type="string", example="75.00 %"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Game")),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="Unauthorized"),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Not Found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="error", type="string", example="User not found"),
+     *         )
+     *     )
+     * )
+     */
+    public function gamesHistory(int $id, Request $request): JsonResponse
     {
         $user = User::findOrFail($id);
         //validacion usuario logeado y solicitud
@@ -137,7 +278,7 @@ class PlayerController extends Controller
         ]);
     }
 
-    private function calculateSuccessRate(User $user) : float
+    private function calculateSuccessRate(User $user): float
     {
         $games = Game::where('user_id', $user->id)->get();
         $won = $games->filter(function ($game) {
@@ -147,7 +288,41 @@ class PlayerController extends Controller
         $totalGames = $games->count();
         return $totalGames > 0 ? ($won / $totalGames) * 100 : 0;
     }
-    public function deleteHistory(int $id, Request $request) : JsonResponse
+
+    //DELETE history of a player
+    /**
+     * Delete game history for a specific player.
+     *
+     * @OA\Delete(
+     *     path="/api/v1/players/{id}/games-history",
+     *     tags={"Player"},
+     *     summary="Delete game history for a specific player",
+     *     operationId="deleteHistory",
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the player",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Game history deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Game history deleted for user: John Doe")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Unauthorized")
+     *         )
+     *     )
+     * )
+     */
+    public function deleteHistory(int $id, Request $request): JsonResponse
     {
         $user = User::findOrFail($id);
         //validacion usuario logeado y solicitud
