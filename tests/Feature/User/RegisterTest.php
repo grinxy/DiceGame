@@ -6,18 +6,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 
 class RegisterTest extends TestCase
 {
-
 
     /**
      * A basic feature test example.
      */
 
-    //Test registro correcto en DB
+//TEST EndPoint: Route::post('v1/players', [UserController::class, 'register']);
     public function test_register_user(): void
     {
+
         $data = [
             'name' => 'example2',
             'email' => 'example2@example.com',
@@ -27,7 +28,7 @@ class RegisterTest extends TestCase
         $response = $this->postJson('/api/v1/players', $data);
 
 
-        $response->assertStatus(200); //201 es 'created'
+        $response->assertStatus(201); //201 es 'created'
 
         $this->assertDatabaseHas('users', [
             'name' => 'example2',
@@ -35,7 +36,7 @@ class RegisterTest extends TestCase
         ]);
     }
     //Test registro incorrecto si email no es único
-       public function test_register_not_unique_email()
+      public function test_register_not_unique_email()
     {
         User::create([
             'name' => 'Juanjo',
@@ -125,5 +126,18 @@ class RegisterTest extends TestCase
             'name' => 'anonimo',
             'email' => 'anonimo2@mail.com'
         ]);
+    }
+    public function test_register_wrong_email_format()
+    {
+          $data = [
+            'email' => 'hello',
+            'password' => '1234',
+        ];
+
+        $response = $this->postJson('/api/v1/players/', $data);
+
+        $response->assertStatus(422);
+
+
     }
 }

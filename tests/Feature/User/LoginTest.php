@@ -5,29 +5,31 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
+use Laravel\Passport\Passport;
 
 class LoginTest extends TestCase
 {
 
-
+    //TEST EndPoint: Route::post('v1/players/login', [UserController::class, 'login']);
     public function test_login_with_valid_credentials()
     {
-        // Crear un usuario de prueba
-        $user = User::factory()->create([
-            'email' => 'test@example.com',
-            'password' => 'password'
-        ]);
 
-        // Envía una solicitud de inicio de sesión con credenciales válidas
-        $response = $this->postJson('/api/v1/players/login', [
+        // Crear usuario de prueba
+        User::create([
+            'name' => 'test',
             'email' => 'test@example.com',
-            'password' => 'password',
+            'password' => '1234'
         ]);
+        // Realizar solicitud de inicio de sesión con las credenciales del usuario de prueba
 
-        // Verifica que la respuesta tenga el estado 200 (OK)
+        $response = $this->postJson("/api/v1/players/login", [
+            'email' => 'test@example.com',
+            'password' => '1234',
+        ]);
         $response->assertStatus(200);
 
-        // Verifica que la respuesta contiene el token de acceso
+        // Verificar la estructura de la respuesta JSON y confirmar que se crea un token
         $response->assertJsonStructure([
             'status',
             'message',
@@ -35,31 +37,43 @@ class LoginTest extends TestCase
         ]);
     }
 
-    public function test_login_with_invalid_credentials()
+    public function test_login_not_registered_user()
     {
-       /* // Envía una solicitud de inicio de sesión con credenciales inválidas
-        $response = $this->postJson('/api/players/login', [
-            'email' => 'invalid@example.com',
-            'password' => 'invalidpassword',
+
+        $response = $this->postJson('/api/v1/players/login', [
+            'email' => 'test2@example.com',
+            'password' => '1234',
         ]);
 
-        // Verifica que la respuesta tenga el estado 401 (Unauthorized)
-        $response->assertStatus(Response::HTTP_UNAUTHORIZED);
 
-        // Verifica que la respuesta contiene un mensaje de error
+        $response->assertStatus(401);
+
+
         $response->assertJson([
             'status' => false,
             'message' => 'Invalid login details',
-        ]);*/
+        ]);
+    }
+    public function test_login_with_invalid_credentials()
+    {
+        User::create([
+            'name' => 'test3',
+            'email' => 'test3@example.com',
+            'password' => '1234'
+        ]);
+
+
+        $response = $this->postJson('/api/v1/players/login', [
+            'email' => 'test3@example.com',
+            'password' => '0123',
+        ]);
+
+
+        $response->assertStatus(401);
+
+        $response->assertJson([
+            'status' => false,
+            'message' => 'Invalid login details',
+        ]);
     }
 }
-/*Route::prefix('v1')->group(function () {
-    // Open routes (no authentication required)
-    Route::post('/players', [UserController::class, 'register']);
-    Route::post('/players/login', [UserController::class, 'login']);
-
-
-    Route::middleware('auth:api', 'authenticated')->group(function () {
-        Route::put('/players/{id}', [UserController::class, 'nameChange']);
-        Route::post('/players/{id}/logout', [UserController::class, 'logout']);
-    });*/
