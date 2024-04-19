@@ -2,7 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\PlayerController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,12 +24,25 @@ use App\Http\Controllers\Api\ApiController;
 // Version 1 of the API
 Route::prefix('v1')->group(function () {
     // Open routes (no authentication required)
-    Route::post('register', [ApiController::class, 'register']);
-    Route::post('login', [ApiController::class, 'login']);
+    Route::post('/players', [UserController::class, 'register']);
+    Route::post('/players/login', [UserController::class, 'login']);
 
-    // Protected routes (require authentication)
-    Route::middleware('auth:api')->group(function () {
-        Route::get('profile', [ApiController::class, 'profile']);
-        Route::get('logout', [ApiController::class, 'logout']);
+
+    Route::middleware('auth:api', 'authenticated')->group(function () {
+        Route::put('/players/{id}', [UserController::class, 'nameChange']);
+        Route::post('/players/{id}/logout', [UserController::class, 'logout']);
+    });
+    Route::middleware('auth:api','checkPlayerRole')->group(function () {
+        Route::post('/players/{id}/games', [GameController::class, 'play']);
+        Route::get('/players/{id}/games', [PlayerController::class, 'gamesHistory']);
+        Route::delete('players/{id}/games', [PlayerController::class, 'deleteHistory']);
+
+
+    });
+    Route::middleware('auth:api','checkAdminRole')->group(function () {
+        Route::get('/players', [PlayerController::class, 'listPlayers']);
+        Route::get('/players/ranking', [PlayerController::class, 'ranking']);
+        Route::get('/players/ranking/winner', [PlayerController::class, 'rankingWinner']);
+        Route::get('/players/ranking/loser', [PlayerController::class, 'rankingLoser']);
     });
 });
