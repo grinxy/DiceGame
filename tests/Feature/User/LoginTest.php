@@ -11,27 +11,24 @@ use Laravel\Passport\Passport;
 class LoginTest extends TestCase
 {
 
-
     public function test_login_with_valid_credentials()
     {
 
-        Artisan::call('config:cache');
-
         // Crear usuario de prueba
-        $user = User::create([
+        User::create([
             'name' => 'test',
             'email' => 'test@example.com',
             'password' => '1234'
         ]);
-
         // Realizar solicitud de inicio de sesión con las credenciales del usuario de prueba
 
-        $response = $this->postJson("/api/v1/players/{$user->id}/login", [
+        $response = $this->postJson("/api/v1/players/login", [
             'email' => 'test@example.com',
             'password' => '1234',
         ]);
+        $response->assertStatus(200);
 
-        // Verificar la estructura de la respuesta JSON
+        // Verificar la estructura de la respuesta JSON y confirmar que se crea un token
         $response->assertJsonStructure([
             'status',
             'message',

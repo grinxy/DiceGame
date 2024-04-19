@@ -91,14 +91,3 @@ class UpdateUserTest extends TestCase
         ]);
     }
 }
-
-/*Route::prefix('v1')->group(function () {
-    // Open routes (no authentication required)
-    Route::post('/players', [UserController::class, 'register']);
-    Route::post('/players/login', [UserController::class, 'login']);
-
-
-    Route::middleware('auth:api', 'authenticated')->group(function () {
-        Route::put('/players/{id}', [UserController::class, 'nameChange']);
-        Route::post('/players/{id}/logout', [UserController::class, 'logout']);
-    });*/
