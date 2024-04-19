@@ -13,6 +13,9 @@ class LogoutTest extends TestCase
     /**
      * A basic feature test example.
      */
+
+//TEST EndPoint: Route::post('v1/players/{id}/logout', [UserController::class, 'logout']);
+
     public function test_logout_valid_credentials(): void
     {
 

@@ -15,6 +15,7 @@ class UpdateUserTest extends TestCase
      * A basic feature test example.
      */
 
+     //TEST EndPoint: Route::put('v1/players/{id}', [UserController::class, 'nameChange']);
     public function test_update_user_name(): void
     {
         $user = User::create([

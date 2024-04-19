@@ -13,7 +13,7 @@ class PlayerTest extends TestCase
     /**
      * A basic feature test example.
      */
-
+   //TEST EndPoint: Route::post('v1/players/{id}/games', [GameController::class, 'play']);
     public function test_player_can_play(): void
     {
 
@@ -91,6 +91,8 @@ class PlayerTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    //TEST EndPoint:  Route::get('v1/players/{id}/games', [PlayerController::class, 'gamesHistory']);
     public function test_player_get_games_history(): void
     {
 
@@ -169,6 +171,8 @@ class PlayerTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    //TEST EndPoint:  Route::delete('v1/players/{id}/games', [PlayerController::class, 'deleteHistory']);
     public function test_player_delete_games_history(): void
     {
 

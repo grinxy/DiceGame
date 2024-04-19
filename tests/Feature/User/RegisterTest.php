@@ -15,7 +15,7 @@ class RegisterTest extends TestCase
      * A basic feature test example.
      */
 
-    //Test registro correcto en DB
+//TEST EndPoint: Route::post('v1/players', [UserController::class, 'register']);
     public function test_register_user(): void
     {
 

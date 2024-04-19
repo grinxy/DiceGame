@@ -11,6 +11,7 @@ use Laravel\Passport\Passport;
 class LoginTest extends TestCase
 {
 
+    //TEST EndPoint: Route::post('v1/players/login', [UserController::class, 'login']);
     public function test_login_with_valid_credentials()
     {
 
