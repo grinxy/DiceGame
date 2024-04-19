@@ -41,4 +41,5 @@ This API manages a dice game application where users can register, log in, play 
 - Unit and integration tests are implemented using PHPUnit.
 - Test-Driven Development (TDD) approach is followed to ensure the functionality of each route.
 
-For detailed information on request and response formats, please refer to the Swagger documentation or the API codebase.
+For detailed information on request and response formats, please refer to the Swagger documentation or the API codebase. http://127.0.0.1:8000/api/documentation
+
